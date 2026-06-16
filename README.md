@@ -187,3 +187,30 @@ Result:
 |---------------------------|-------------------|
 | midfield - Right Midfield | 100               |
 
+### Task 8. 
+Calculate in which team the contract of 5 players will expire first
+
+```sql
+WITH ranking AS (
+    SELECT 
+        club,
+        contract_expires,
+        ROW_NUMBER() OVER(PARTITION BY club ORDER BY contract_expires) AS rank_by_contract_expire
+    FROM players
+    WHERE contract_expires > '1970-01-01'
+)
+
+SELECT
+    club,
+    contract_expires
+FROM ranking
+WHERE rank_by_contract_expire = 5
+ORDER BY contract_expires
+LIMIT 1;
+```
+
+Result:
+| club      | contract_expires |
+|-----------|------------------|
+| 1.FC Köln | 2023-06-30       |
+
