@@ -169,3 +169,21 @@ Result (first 10 rows):
 | Attack - Centre-Forward       | Mathys Tel            | 20    | 7.57                  |
 | Attack - Centre-Forward       | Randal Kolo Muani     | 65    | 7.57                  |
 
+### Task 7. 
+Which position is the most difficult to get a contract with any company (... puma, adidas)
+
+```sql
+SELECT 
+    position,
+    ROUND(AVG(CASE WHEN outfitter = '' THEN 1 ELSE 0 END) * 100, 2) AS no_contract_share
+FROM players
+GROUP BY position
+ORDER BY no_contract_share DESC
+LIMIT 1;
+```
+
+Result:
+| position                  | no_contract_share |
+|---------------------------|-------------------|
+| midfield - Right Midfield | 100               |
+
