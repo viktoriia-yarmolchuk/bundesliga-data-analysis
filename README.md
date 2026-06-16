@@ -34,10 +34,9 @@ SELECT
     club,
     name,
     joined_club,
-    RANK() OVER(PARTITION BY club ORDER BY joined_club DESC) - 1 AS players_after
+    ROW_NUMBER() OVER(PARTITION BY club ORDER BY joined_club DESC) - 1 AS players_after
 FROM players;
 ```
-***RANK()** was used instead of **ROW_NUMBER()** to correctly count players who joined on the same day*
 
 Result (first 10 rows):
 | club      | name              | joined_club | players_after |
@@ -46,12 +45,13 @@ Result (first 10 rows):
 | 1.FC Köln | Nikola Soldo      | 2022-09-01  | 1             |
 | 1.FC Köln | Sargis Adamyan    | 2022-07-05  | 2             |
 | 1.FC Köln | Luca Kilian       | 2022-07-01  | 3             |
-| 1.FC Köln | Denis Huseinbasic | 2022-07-01  | 3             |
-| 1.FC Köln | Kristian Pedersen | 2022-07-01  | 3             |
-| 1.FC Köln | Eric Martel       | 2022-07-01  | 3             |
-| 1.FC Köln | Florian Dietz     | 2022-07-01  | 3             |
-| 1.FC Köln | Linton Maina      | 2022-07-01  | 3             |
-| 1.FC Köln | Steffen Tigges    | 2022-07-01  | 3             |
+| 1.FC Köln | Denis Huseinbasic | 2022-07-01  | 4             |
+| 1.FC Köln | Kristian Pedersen | 2022-07-01  | 5             |
+| 1.FC Köln | Eric Martel       | 2022-07-01  | 6             |
+| 1.FC Köln | Florian Dietz     | 2022-07-01  | 7             |
+| 1.FC Köln | Linton Maina      | 2022-07-01  | 8             |
+| 1.FC Köln | Steffen Tigges    | 2022-07-01  | 9             |
+
 
 ### Task 3. 
 Choose clubs where the average value of French players is more than 5 million
