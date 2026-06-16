@@ -232,3 +232,99 @@ Result:
 |-----|-----------|
 | 27  | 15.32     |
 
+### Task 10. 
+Which team has the most played lineup (longest playing together)
+
+```sql
+SELECT 
+    club,
+    ROUND(AVG(
+        dateDiff('day', joined_club, least(today(), contract_expires))
+        ), 
+    0) AS avg_days_played_together
+FROM players
+WHERE contract_expires > '1970-01-01'
+GROUP BY club
+ORDER BY avg_days_played_together DESC
+LIMIT 1;
+```
+
+Result:
+| club            | avg_days_played_together |
+|-----------------|--------------------------|
+| Bor. M'gladbach | 2195                     |
+
+### Task 11. 
+Which teams have namesakes
+
+```sql
+SELECT 
+    club,
+    splitByChar(' ', name)[1] AS first_name,
+    COUNT(*) AS namesake_count,
+    groupArray(name) AS players_list
+FROM players
+GROUP BY club, first_name
+HAVING namesake_count > 1
+ORDER BY namesake_count DESC, club;
+```
+
+Result:
+| club            | first_name | namesake_count | players_list           |                      |
+|-----------------|------------|----------------|------------------------|----------------------|
+| 1.FC Köln       | Florian    | 2              | [""Florian Kainz"      | "Florian Dietz""]    |
+| 1.FC Köln       | Timo       | 2              | [""Timo Horn"          | "Timo Hübers""]      |
+| Bor. Dortmund   | Julian     | 2              | [""Julian Ryerson"     | "Julian Brandt""]    |
+| Bor. Dortmund   | Nico       | 2              | [""Nico Schlotterbeck" | "Nico Schulz""]      |
+| Bor. M'gladbach | Jonas      | 2              | [""Jonas Omlin"        | "Jonas Hofmann""]    |
+| FC Augsburg     | Arne       | 2              | [""Arne Maier"         | "Arne Engels""]      |
+| FC Augsburg     | Daniel     | 2              | [""Daniel Klein"       | "Daniel Caligiuri""] |
+| FC Schalke 04   | Michael    | 2              | [""Michael Langer"     | "Michael Frey""]     |
+| SC Freiburg     | Noah       | 2              | [""Noah Atubolu"       | "Noah Weißhaupt""]   |
+| TSG Hoffenheim  | Kevin      | 2              | [""Kevin Akpoguma"     | "Kevin Vogt""]       |
+| Union Berlin    | Paul       | 2              | [""Paul Jaeckel"       | "Paul Seguin""]      |
+| Union Berlin    | Kevin      | 2              | [""Kevin Möhwald"      | "Kevin Behrens""]    |
+| VfB Stuttgart   | Florian    | 2              | [""Florian Müller"     | "Florian Schock""]   |
+| VfL Bochum      | Philipp    | 2              | [""Philipp Förster"    | "Philipp Hofmann""]  |
+| Werder Bremen   | Niklas     | 2              | [""Niklas Stark"       | "Niklas Schmidt""]   |
+
+### Task 12. 
+List the teams where the top three players account for 50% of the payroll
+
+```sql
+WITH ranked_players AS (
+    SELECT 
+        club,
+        price,
+        ROW_NUMBER() OVER (PARTITION BY club ORDER BY price DESC) AS rn
+    FROM players
+    WHERE price IS NOT NULL
+),
+club_shares AS (
+    SELECT 
+        club,
+        SUM(price) AS total_payroll,
+        SUM(CASE WHEN rn <= 3 THEN price ELSE 0 END) AS top3_payroll
+    FROM ranked_players
+    GROUP BY club
+)
+SELECT 
+    club,
+    ROUND((top3_payroll / total_payroll) * 100, 2) AS top3_share
+FROM club_shares
+WHERE total_payroll > 0 
+  AND top3_share >= 50
+ORDER BY top3_share DESC;
+```
+
+Result:
+| club           | top3_share |
+|----------------|------------|
+| RB Leipzig U19 | 100        |
+| B. Dortmund II | 100        |
+| Hertha BSC U19 | 100        |
+| W. Bremen U19  | 100        |
+| W. Bremen II   | 100        |
+| RB Leipzig U17 | 100        |
+| Hertha BSC II  | 100        |
+| 1.FC Köln II   | 66.67      |
