@@ -107,3 +107,30 @@ Result:
 | 1.FC Köln II    | 100                  |
 | RB Leipzig U17  | 100                  |
 | Hertha BSC II   | 100                  |
+
+### Task 5. 
+Choose the most expensive player by each age (name + price)
+
+```sql
+SELECT 
+    age,
+    argMax(name, price) AS most_expensive_player,
+    MAX(price) AS max_price
+FROM players
+GROUP BY age
+ORDER BY age;
+```
+
+Result (first 10 rows):
+| age | most_expensive_player | max_price |
+|-----|-----------------------|-----------|
+| 17  | Julien Duranville     | 5         |
+| 18  | Youssoufa Moukoko     | 30        |
+| 19  | Jude Bellingham       | 120       |
+| 20  | Jamal Musiala         | 110       |
+| 21  | Josko Gvardiol        | 75        |
+| 22  | Alphonso Davies       | 70        |
+| 23  | Matthijs de Ligt      | 75        |
+| 24  | Randal Kolo Muani     | 65        |
+| 25  | Christopher Nkunku    | 80        |
+| 26  | Kingsley Coman        | 65        |
