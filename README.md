@@ -34,7 +34,7 @@ SELECT
     club,
     name,
     joined_club,
-    $RANK() OVER(PARTITION BY club ORDER BY joined_club DESC) - 1 AS players_after
+    RANK() OVER(PARTITION BY club ORDER BY joined_club DESC) - 1 AS players_after
 FROM players;
 ```
 ***RANK()** was used instead of **ROW_NUMBER()** to correctly count players who joined on the same day*
