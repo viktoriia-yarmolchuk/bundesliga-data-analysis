@@ -134,3 +134,38 @@ Result (first 10 rows):
 | 24  | Randal Kolo Muani     | 65        |
 | 25  | Christopher Nkunku    | 80        |
 | 26  | Kingsley Coman        | 65        |
+
+### Task 6. 
+Select players with price 1.5 times higher comparing with the average on their position
+
+```sql
+WITH average_price AS (SELECT 
+    position,
+    name,
+    price,
+    AVG(price) OVER(PARTITION BY position) AS avg_price
+FROM players)
+
+SELECT
+    position,
+    name,
+    price,
+    ROUND(avg_price, 2) AS avg_price_by_position
+FROM average_price
+WHERE price >= avg_price * 1.5;
+```
+
+Result (first 10 rows):
+| position                      | name                  | price | avg_price_by_position |
+|-------------------------------|-----------------------|-------|-----------------------|
+| Attack - Centre-Forward       | Rafael Borré          | 12    | 7.57                  |
+| Attack - Centre-Forward       | Marcus Thuram         | 32    | 7.57                  |
+| Attack - Centre-Forward       | Lukas Nmecha          | 14    | 7.57                  |
+| Attack - Centre-Forward       | Niclas Füllkrug       | 13    | 7.57                  |
+| Attack - Centre-Forward       | Jonas Wind            | 14    | 7.57                  |
+| Attack - Centre-Forward       | Sardar Azmoun         | 12    | 7.57                  |
+| Attack - Centre-Forward       | Adam Hlozek           | 15    | 7.57                  |
+| Attack - Centre-Forward       | Patrik Schick         | 30    | 7.57                  |
+| Attack - Centre-Forward       | Mathys Tel            | 20    | 7.57                  |
+| Attack - Centre-Forward       | Randal Kolo Muani     | 65    | 7.57                  |
+
