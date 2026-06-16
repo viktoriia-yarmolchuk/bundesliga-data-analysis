@@ -214,3 +214,21 @@ Result:
 |-----------|------------------|
 | 1.FC Köln | 2023-06-30       |
 
+### Task 9. 
+At what age do players usually reach their price peak?
+
+```sql
+SELECT 
+    age,
+    ROUND(AVG(price), 2) AS avg_price
+FROM players
+GROUP BY age
+ORDER BY avg_price DESC
+LIMIT 1;
+```
+
+Result:
+| age | avg_price |
+|-----|-----------|
+| 27  | 15.32     |
+
