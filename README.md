@@ -82,3 +82,28 @@ Result:
 | RB Leipzig      | 41        |
 | E. Frankfurt    | 26.75     |
 | Union Berlin    | 5.33      |
+
+### Task 4. 
+Choose clubs where the share of Germans is higher than 90%
+
+```sql
+SELECT
+    club,
+    ROUND(AVG(CASE WHEN nationality LIKE '%Germany%' THEN 1 ELSE 0 END) * 100, 2) AS german_players_share
+FROM players
+GROUP BY club
+HAVING german_players_share > 90;
+```
+
+Result:
+| club            | german_players_share |
+|-----------------|----------------------|
+| RB Leipzig U19  | 100                  |
+| Hertha BSC U19  | 100                  |
+| W. Bremen U19   | 100                  |
+| FC Augsburg U19 | 100                  |
+| W. Bremen II    | 100                  |
+| 1.FC Köln U19   | 100                  |
+| 1.FC Köln II    | 100                  |
+| RB Leipzig U17  | 100                  |
+| Hertha BSC II   | 100                  |
