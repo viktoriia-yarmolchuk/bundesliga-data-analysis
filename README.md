@@ -34,7 +34,7 @@ SELECT
     club,
     name,
     joined_club,
-    ROW_NUMBER() OVER(PARTITION BY club ORDER BY joined_club DESC) - 1 AS players_after
+    RANK() OVER(PARTITION BY club ORDER BY joined_club DESC) - 1 AS players_after
 FROM players;
 ```
 
@@ -45,12 +45,12 @@ Result (first 10 rows):
 | 1.FC Köln | Nikola Soldo      | 2022-09-01  | 1             |
 | 1.FC Köln | Sargis Adamyan    | 2022-07-05  | 2             |
 | 1.FC Köln | Luca Kilian       | 2022-07-01  | 3             |
-| 1.FC Köln | Denis Huseinbasic | 2022-07-01  | 4             |
-| 1.FC Köln | Kristian Pedersen | 2022-07-01  | 5             |
-| 1.FC Köln | Eric Martel       | 2022-07-01  | 6             |
-| 1.FC Köln | Florian Dietz     | 2022-07-01  | 7             |
-| 1.FC Köln | Linton Maina      | 2022-07-01  | 8             |
-| 1.FC Köln | Steffen Tigges    | 2022-07-01  | 9             |
+| 1.FC Köln | Denis Huseinbasic | 2022-07-01  | 3             |
+| 1.FC Köln | Kristian Pedersen | 2022-07-01  | 3             |
+| 1.FC Köln | Eric Martel       | 2022-07-01  | 3             |
+| 1.FC Köln | Florian Dietz     | 2022-07-01  | 3             |
+| 1.FC Köln | Linton Maina      | 2022-07-01  | 3             |
+| 1.FC Köln | Steffen Tigges    | 2022-07-01  | 3             |
 
 
 ### Task 3. 
@@ -220,39 +220,44 @@ At what age do players usually reach their price peak?
 ```sql
 SELECT 
     age,
-    ROUND(AVG(price), 2) AS avg_price
+    COUNT(name) AS players_count
 FROM players
+WHERE price = max_price 
 GROUP BY age
-ORDER BY avg_price DESC
+ORDER BY players_count DESC
 LIMIT 1;
 ```
 
 Result:
-| age | avg_price |
-|-----|-----------|
-| 27  | 15.32     |
+| age | players_count |
+|-----|---------------|
+| 22  |      25       |
 
 ### Task 10. 
 Which team has the most played lineup (longest playing together)
 
 ```sql
+WITH CoreSquad AS (
+    SELECT 
+        club,
+        joined_club,
+        ROW_NUMBER() OVER(PARTITION BY club ORDER BY price DESC) AS player_rank
+    FROM players
+)
 SELECT 
     club,
-    ROUND(AVG(
-        dateDiff('day', joined_club, least(today(), contract_expires))
-        ), 
-    0) AS avg_days_played_together
-FROM players
-WHERE contract_expires > '1970-01-01'
+    ROUND(AVG(dateDiff('day', joined_club, today())), 0) AS core_avg_days_together
+FROM CoreSquad
+WHERE player_rank <= 11
 GROUP BY club
-ORDER BY avg_days_played_together DESC
+ORDER BY core_avg_days_together DESC
 LIMIT 1;
 ```
 
 Result:
-| club            | avg_days_played_together |
-|-----------------|--------------------------|
-| Bor. M'gladbach | 2195                     |
+| club          | core_avg_days_together |
+|---------------|------------------------|
+| Bayern Munich | 2503                   |
 
 ### Task 11. 
 Which teams have namesakes
@@ -292,39 +297,34 @@ Result:
 List the teams where the top three players account for 50% of the payroll
 
 ```sql
-WITH ranked_players AS (
+WITH value_share AS (
     SELECT 
         club,
-        price,
+        price / 
+        SUM(price) OVER(PARTITION BY club) * 100 AS share,
         ROW_NUMBER() OVER (PARTITION BY club ORDER BY price DESC) AS rn
     FROM players
     WHERE price IS NOT NULL
 ),
-club_shares AS (
+
+running_share AS (
     SELECT 
         club,
-        SUM(price) AS total_payroll,
-        SUM(CASE WHEN rn <= 3 THEN price ELSE 0 END) AS top3_payroll
-    FROM ranked_players
-    GROUP BY club
+        rn,
+        ROUND(SUM(share) OVER(PARTITION BY club ORDER BY rn), 2) AS cumulative_share
+    FROM value_share
 )
-SELECT 
+
+SELECT
     club,
-    ROUND((top3_payroll / total_payroll) * 100, 2) AS top3_share
-FROM club_shares
-WHERE total_payroll > 0 
-  AND top3_share >= 50
-ORDER BY top3_share DESC;
+    cumulative_share
+FROM running_share
+WHERE rn = 3
+    AND cumulative_share >= 50;
 ```
 
 Result:
-| club           | top3_share |
-|----------------|------------|
-| RB Leipzig U19 | 100        |
-| B. Dortmund II | 100        |
-| Hertha BSC U19 | 100        |
-| W. Bremen U19  | 100        |
-| W. Bremen II   | 100        |
-| RB Leipzig U17 | 100        |
-| Hertha BSC II  | 100        |
-| 1.FC Köln II   | 66.67      |
+| club           | cumulative_share |
+|----------------|------------------|
+| 1.FC Köln II   | 66.67            |
+| B. Dortmund II | 100              |
